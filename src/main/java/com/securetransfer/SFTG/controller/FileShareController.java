@@ -37,18 +37,6 @@ public class FileShareController {
         return ResponseEntity.ok(link);
     }
 
-
-//    @PostMapping("/generate/{storedFilename}")
-//    public ResponseEntity<String> generateShareLink(
-//            @PathVariable String storedFilename,
-//            Authentication authentication) {
-//
-//        String username = authentication.getName();
-//        String link = fileShareService.generateShareLink(storedFilename, username);
-//
-//        return ResponseEntity.ok(link);
-//    }
-
     @GetMapping("/download/{token}")
     public ResponseEntity<Resource> downloadSharedFile(
             @PathVariable String token) {
@@ -64,45 +52,4 @@ public class FileShareController {
                         "attachment; filename=\"" + file.getOriginalFilename() + "\"")
                 .body(resource);
     }
-
-//    public ResponseEntity<Resource> downloadSharedFile(
-//            @PathVariable String token,
-//            Authentication authentication) {
-//
-//        // 🔐 ensures user is logged in
-//        if (authentication == null || !authentication.isAuthenticated()) {
-//            return ResponseEntity
-//                    .status(401)
-//                    .header("Error", "Authentication is required to download shared files")
-//                    .build();
-//        }
-//
-//        FileEntity file = fileShareService.validateAndGetFile(token);
-//
-//        Resource resource = fileService.loadFileAsResource(
-//                file.getStoredFilename(),
-//                file.getUploadedByUsername().getUsername()
-//        );
-//
-//        return ResponseEntity.ok()
-//                .header(HttpHeaders.CONTENT_DISPOSITION,
-//                        "attachment; filename=\"" + file.getOriginalFilename() + "\"")
-//                .body(resource);
-//    }
-
-//    @GetMapping("/download/{token}")
-//    public ResponseEntity<Resource> downloadSharedFile(@PathVariable String token) {
-//
-//        SharedLink link = fileShareService.validateLink(token);
-//
-//        Resource resource = fileService.loadFileAsResource(
-//                link.getStoredFilename(),
-//                link.getCreatedByUsername()
-//        );
-//
-//        return ResponseEntity.ok()
-//                .header(HttpHeaders.CONTENT_DISPOSITION,
-//                        "attachment; filename=\"" + link.getOriginalFilename() + "\"")
-//                .body(resource);
-//    }
 }

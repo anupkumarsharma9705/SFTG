@@ -36,6 +36,9 @@ public class FileEntity {
     @Column(nullable = false)
     private LocalDateTime uploadDate;
 
+    @Column(nullable = false)
+    private LocalDateTime expiryAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User uploadedByUsername;

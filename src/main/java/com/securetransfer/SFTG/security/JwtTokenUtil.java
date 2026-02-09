@@ -81,10 +81,6 @@ public class JwtTokenUtil {
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
-//    private Key getSigningKey() {
-//        byte[] keyBytes = Decoders.BASE64.decode(secret);
-//        return Keys.hmacShaKeyFor(keyBytes);
-//    }
     private Key getSigningKey() {
         return signingKey;
     }
