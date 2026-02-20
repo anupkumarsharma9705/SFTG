@@ -11,6 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface FileRepository extends JpaRepository<FileEntity, Long> {
+    List<FileEntity> findByUploadedByUsername_Email(String email);
     List<FileEntity> findByExpiryAtBefore(LocalDateTime time);
     Optional<FileEntity> findByStoredFilename(String storedFilename);
 }

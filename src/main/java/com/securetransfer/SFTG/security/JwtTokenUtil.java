@@ -20,10 +20,10 @@ import java.util.function.Function;
 @Component
 public class JwtTokenUtil {
 
-//    @Value("${jwt.secret}")
-//    private String secret;
+    @Value("${jwt.secret}")
+    private String secret;
 
-    private final Key signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+//    private final Key signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
     @Value("${jwt.expirationMs}")
     private long expirationMs;
@@ -71,7 +71,7 @@ public class JwtTokenUtil {
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -82,6 +82,7 @@ public class JwtTokenUtil {
     }
 
     private Key getSigningKey() {
-        return signingKey;
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 }

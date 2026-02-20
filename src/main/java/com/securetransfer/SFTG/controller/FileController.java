@@ -1,7 +1,9 @@
 // src/main/java/com/example/sftg/controller/FileController.java
 package com.securetransfer.SFTG.controller;
 
+import com.securetransfer.SFTG.dto.FileDetailsResponseDTO;
 import com.securetransfer.SFTG.dto.FileResponse;
+import com.securetransfer.SFTG.dto.FileResponseDTO;
 import com.securetransfer.SFTG.exception.ResourceNotFoundException;
 import com.securetransfer.SFTG.model.FileEntity;
 import com.securetransfer.SFTG.service.FileService;
@@ -18,6 +20,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/files")
@@ -62,6 +65,29 @@ public class FileController {
                         "attachment; filename=\"" + resource.getFilename() + "\"")
                 .body(resource);
     }
+    @GetMapping("/my-files")
+    public ResponseEntity<List<FileDetailsResponseDTO>> getMyFiles(
+            Authentication authentication) {
+
+        String email = authentication.getName();
+
+        return ResponseEntity.ok(
+                fileService.getMyFilesWithDetails(email)
+        );
+
+    }
+
+
+//    @GetMapping("/my-files")
+//    public ResponseEntity<List<FileEntity>> getMyFiles(Authentication authentication) {
+//
+//        String email = authentication.getName();
+//
+//        List<FileEntity> files = fileService.getMyFiles(email);
+//
+//        return ResponseEntity.ok(files);
+//    }
+
 
 //    public ResponseEntity<Resource> downloadFile(@PathVariable String filename, HttpServletRequest request, Principal principal) {
 //        // Load file as Resource and perform ownership check in service
@@ -91,62 +117,3 @@ public class FileController {
 //                .body(resource);
 //    }
 }
-
-//import com.securetransfer.SFTG.model.FileEntity;
-//import com.securetransfer.SFTG.service.FileService;
-//import jakarta.servlet.http.HttpServletResponse;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.security.core.annotation.AuthenticationPrincipal;
-//import org.springframework.security.core.userdetails.UserDetails;
-//import org.springframework.web.bind.annotation.*;
-//import org.springframework.web.multipart.MultipartFile;
-//
-//import java.io.*;
-//import java.nio.file.*;
-//import java.util.Optional;
-//
-//@RestController
-//@RequestMapping("/api/files")
-//public class FileController {
-//
-//    private final FileService fileService;
-//
-//    public FileController(FileService fileService) {
-//        this.fileService = fileService;
-//    }
-//
-//    @PostMapping("/upload")
-//    public ResponseEntity<?> uploadFile(
-//            @RequestParam("file") MultipartFile file,
-//            @AuthenticationPrincipal UserDetails userDetails) {
-//
-//        try {
-//            FileEntity saved = fileService.uploadFile(file, userDetails.getUsername());
-//            return ResponseEntity.ok("File uploaded successfully: " + saved.getFilename());
-//        } catch (IOException e) {
-//            return ResponseEntity.internalServerError().body("File upload failed: " + e.getMessage());
-//        }
-//    }
-//
-//    @GetMapping("/download/{filename}")
-//    public void downloadFile(@PathVariable String filename, HttpServletResponse response) throws IOException {
-//        Optional<FileEntity> fileEntity = fileService.getFileByName(filename);
-//
-//        if (fileEntity.isEmpty()) {
-//            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-//            response.getWriter().write("File not found");
-//            return;
-//        }
-//
-//        Path filePath = Paths.get(fileEntity.get().getFilePath());
-//        if (Files.exists(filePath)) {
-//            response.setContentType("application/octet-stream");
-//            response.setHeader("Content-Disposition", "attachment; filename=" + filename);
-//            Files.copy(filePath, response.getOutputStream());
-//            response.getOutputStream().flush();
-//        } else {
-//            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-//            response.getWriter().write("File not found on disk");
-//        }
-//    }
-//}

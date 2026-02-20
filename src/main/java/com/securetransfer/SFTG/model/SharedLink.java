@@ -42,4 +42,7 @@ public class SharedLink {
 
     @Column(nullable = false)
     private int downloadCount = 0;
+
+    @OneToMany(mappedBy = "sharedLink", cascade = CascadeType.ALL)
+    private java.util.List<DownloadLog> downloadLogs;
 }

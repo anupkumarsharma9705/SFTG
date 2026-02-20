@@ -1,11 +1,17 @@
 // src/main/java/com/example/sftg/service/FileService.java
 package com.securetransfer.SFTG.service;
 
+import com.securetransfer.SFTG.dto.DownloadLogDTO;
+import com.securetransfer.SFTG.dto.FileDetailsResponseDTO;
+import com.securetransfer.SFTG.dto.FileResponseDTO;
 import com.securetransfer.SFTG.exception.FileStorageException;
 import com.securetransfer.SFTG.exception.ResourceNotFoundException;
 import com.securetransfer.SFTG.model.FileEntity;
+import com.securetransfer.SFTG.model.SharedLink;
 import com.securetransfer.SFTG.model.User;
+import com.securetransfer.SFTG.repository.DownloadLogRepository;
 import com.securetransfer.SFTG.repository.FileRepository;
+import com.securetransfer.SFTG.repository.SharedLinkRepository;
 import com.securetransfer.SFTG.repository.UserRepository;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +31,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class FileService {
@@ -38,6 +42,11 @@ public class FileService {
     private Path fileStorageLocation;
 
     private static final long MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+    @Autowired
+    private DownloadLogRepository downloadLogRepository;
+
+    @Autowired
+    private SharedLinkRepository sharedLinkRepository;
 
     @Autowired
     private FileRepository fileRepository;
@@ -204,10 +213,59 @@ public class FileService {
             throw new ResourceNotFoundException("File not found: " + storedFilename, ex);
         }
     }
+//    public List<FileEntity> getMyFiles(String email) {
+//        return fileRepository.findByUploadedByUsername_Email(email);
+//    }
+
+    public List<FileDetailsResponseDTO> getMyFilesWithDetails(String email) {
+
+        List<FileEntity> files = fileRepository
+                .findByUploadedByUsername_Email(email);
+
+        return files.stream().map(file -> {
+
+            SharedLink link = sharedLinkRepository
+                    .findByStoredFilename(file.getStoredFilename())
+                    .orElse(null);
+
+            List<DownloadLogDTO> logs = new ArrayList<>();
+
+            if (link != null) {
+                logs = downloadLogRepository
+                        .findBySharedLink_Id(link.getId())
+                        .stream()
+                        .map(log -> DownloadLogDTO.builder()
+                                .downloaderEmail(log.getDownloaderEmail())
+                                .downloadedAt(log.getDownloadedAt())
+                                .build())
+                        .toList();
+            }
+
+            return FileDetailsResponseDTO.builder()
+                    .id(file.getId())
+                    .originalFilename(file.getOriginalFilename())
+                    .fileSize(file.getFileSize())
+                    .uploadDate(file.getUploadDate())
+                    .expiryAt(file.getExpiryAt())
+                    .active(link != null && link.isActive())
+                    .downloadLimit(link != null ? link.getDownloadLimit() : 0)
+                    .downloadCount(link != null ? link.getDownloadCount() : 0)
+                    .downloadLogs(logs)
+                    .build();
+
+        }).toList();
+
+    }
 
 
     public Optional<FileEntity> getFileMetadataByStoredFilename(String storedFilename) {
         return fileRepository.findByStoredFilename(storedFilename);
+    }
+    public FileEntity getFileByStoredFilename(String storedFilename) {
+        return fileRepository.findByStoredFilename(storedFilename)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("File not found: " + storedFilename)
+                );
     }
 }
 
